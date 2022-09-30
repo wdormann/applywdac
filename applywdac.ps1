@@ -47,6 +47,7 @@ If ( $xml.SiPolicy.PolicyTypeID ) {
   Write-Host "Legacy XML format detected"
   If ([System.Environment]::OSVersion.Version.Build -eq 14393) {
     # Windows 1607 doesn't understand the MaximumFileVersion attribute.  Remove it.
+    Write-Host "Removing MaximumFileVersion attributes, as this version of Windows cannot handle them..."
     $xml.SiPolicy.Filerules.ChildNodes | ForEach-Object -MemberName RemoveAttribute("MaximumFileVersion")
     $xml.Save((Resolve-Path "$xmloutput"))
   }
