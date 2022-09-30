@@ -23,6 +23,7 @@
 
 #>
 
+#Requires -RunAsAdministrator
 Param([string]$xmlpolicy, [switch]$enforce)
 
 if($xmlpolicy -eq "") {
