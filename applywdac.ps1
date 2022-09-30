@@ -105,4 +105,6 @@ Else {
 }
 
 #Save a copy of the potentially-modified XML file for our record
-Copy-Item -path $xmloutput -Destination ([io.path]::GetFileNameWithoutExtension($xmlpolicy) + "-applied.xml")
+$appliedpolicy = [io.path]::GetFileNameWithoutExtension($xmlpolicy) + "-applied.xml"
+Write-Host "Copy of applied policy XML saved as: $appliedpolicy`n"
+Copy-Item -path $xmloutput -Destination $appliedpolicy
