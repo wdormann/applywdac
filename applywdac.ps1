@@ -102,3 +102,6 @@ ElseIf ( $xml.SiPolicy.PolicyID ) {
 Else {
   Write-Error "Cannot determine XML format."
 }
+
+#Save a copy of the potentially-modified XML file for our record
+Copy-Item -path $xmloutput -Destination ([io.path]::GetFileNameWithoutExtension($xmlpolicy) + "-applied.xml")
