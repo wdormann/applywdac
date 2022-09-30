@@ -30,6 +30,11 @@ if($xmlpolicy -eq "") {
    return
 }
 
+ If ([System.Environment]::OSVersion.Version.Major -lt 10) {
+    Write-Error "Windows 10 or later is required to deploy WDAC policies."
+    Exit
+} 
+
 $xmlpolicy = (Resolve-Path "$XmlPolicy")
 
 [xml]$Xml = Get-Content "$xmlpolicy"
