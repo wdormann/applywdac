@@ -22,93 +22,107 @@
    Apply the WDAC policy contained in driverblocklist.xml in audit-only mode
 
 #>
-
-#Requires -RunAsAdministrator
 Param([string]$xmlpolicy, [switch]$enforce)
 
-if ($xmlpolicy -eq "") {
-  Get-Help $MyInvocation.MyCommand.Definition
-  return
-}
+function ApplyWDACPolicy {
+  Param([string]$xmlpolicy, [switch]$enforce)
 
-If ([System.Environment]::OSVersion.Version.Major -lt 10) {
-  Write-Error "Windows 10 or later is required to deploy WDAC policies."
-  Exit
-} 
-
-$xmlpolicy = (Resolve-Path "$XmlPolicy")
-$xmloutput = New-TemporaryFile
-
-Copy-Item -path $xmlpolicy -Destination $xmloutput 
-
-
-[xml]$Xml = Get-Content "$xmloutput"
-If ( $xml.SiPolicy.PolicyTypeID ) {
-  Write-Host "Legacy XML format detected"
-  If ([System.Environment]::OSVersion.Version.Build -eq 14393) {
-    # Windows 1607 doesn't understand the MaximumFileVersion attribute.  Remove it.
-    Write-Host "Removing MaximumFileVersion attributes, as this version of Windows cannot handle them..."
-    $xml.SiPolicy.Filerules.ChildNodes | ForEach-Object -MemberName RemoveAttribute("MaximumFileVersion")
-    $xml.Save((Resolve-Path "$xmloutput"))
+  if ($xmlpolicy -eq "") {
+    Get-Help ApplyWDACPolicy -Detailed
+    return
   }
-  If ([System.Environment]::OSVersion.Version.Build -le 18362.900) {
-    # Install on system that doesn't support multi-policy
-    if ($enforce) {
-      Set-RuleOption -FilePath "$xmloutput" -Option 3 -Delete
+
+  $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+  if (-Not $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Error "This script requires administrative privileges"
+    return
+  }
+
+  If ([System.Environment]::OSVersion.Version.Major -lt 10) {
+    Write-Error "Windows 10 or later is required to deploy WDAC policies."
+    return
+  } 
+
+  $xmlpolicy = (Resolve-Path "$XmlPolicy")
+  $xmloutput = New-TemporaryFile
+
+  Copy-Item -path $xmlpolicy -Destination $xmloutput 
+
+
+  [xml]$Xml = Get-Content "$xmloutput"
+  If ( $xml.SiPolicy.PolicyTypeID ) {
+    Write-Host "Legacy XML format detected"
+    If ([System.Environment]::OSVersion.Version.Build -eq 14393) {
+      # Windows 1607 doesn't understand the MaximumFileVersion attribute.  Remove it.
+      Write-Host "Removing MaximumFileVersion attributes, as this version of Windows cannot handle them..."
+      $xml.SiPolicy.Filerules.ChildNodes | ForEach-Object -MemberName RemoveAttribute("MaximumFileVersion")
+      $xml.Save((Resolve-Path "$xmloutput"))
+    }
+    If ([System.Environment]::OSVersion.Version.Build -le 18362.900) {
+      # Install on system that doesn't support multi-policy
+      if ($enforce) {
+        Set-RuleOption -FilePath "$xmloutput" -Option 3 -Delete
+      }
+      else {
+        Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
+      }
+      $policytypeid = $xml.SiPolicy.PolicyTypeID
+      if ($policytypeid -notmatch "{A244370E-44C9-4C06-B551-F6016E563076}") {
+        Write-Warning "This WDAC policy uses a PolicyTypeID other than {A244370E-44C9-4C06-B551-F6016E563076}. Applying this policy may not have the expected outcome."
+      }
+      ConvertFrom-CIPolicy -xmlFilePath "$xmloutput" -BinaryFilePath ".\SiPolicy.p7b"
+      $PolicyBinary = ".\SIPolicy.p7b"
+      $DestinationBinary = $env:windir + "\System32\CodeIntegrity\SiPolicy.p7b"
+      Copy-Item  -Path $PolicyBinary -Destination $DestinationBinary -Force
+      Invoke-CimMethod -Namespace root\Microsoft\Windows\CI -ClassName PS_UpdateAndCompareCIPolicy -MethodName Update -Arguments @{FilePath = $DestinationBinary }
     }
     else {
-      Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
+      # Install on system that does support multi-policy
+      $policytypeid = $xml.SiPolicy.PolicyTypeID
+      if ($enforce) {
+        Set-RuleOption -FilePath "$xmloutput" -Option 3 -Delete
+      }
+      else {
+        Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
+      }
+      ConvertFrom-CIPolicy -xmlFilePath "$xmloutput" -BinaryFilePath ".\$policytypeid.cip"
+      $PolicyBinary = ".\$policytypeid.cip"
+      $DestinationFolder = $env:windir + "\System32\CodeIntegrity\CIPolicies\Active\"
+      Copy-Item -Path $PolicyBinary -Destination $DestinationFolder -Force
     }
-    $policytypeid = $xml.SiPolicy.PolicyTypeID
-    if ($policytypeid -notmatch "{A244370E-44C9-4C06-B551-F6016E563076}") {
-      Write-Warning "This WDAC policy uses a PolicyTypeID other than {A244370E-44C9-4C06-B551-F6016E563076}. Applying this policy may not have the expected outcome."
-    }
-    ConvertFrom-CIPolicy -xmlFilePath "$xmloutput" -BinaryFilePath ".\SiPolicy.p7b"
-    $PolicyBinary = ".\SIPolicy.p7b"
-    $DestinationBinary = $env:windir + "\System32\CodeIntegrity\SiPolicy.p7b"
-    Copy-Item  -Path $PolicyBinary -Destination $DestinationBinary -Force
-    Invoke-CimMethod -Namespace root\Microsoft\Windows\CI -ClassName PS_UpdateAndCompareCIPolicy -MethodName Update -Arguments @{FilePath = $DestinationBinary }
   }
-  else {
-    # Install on system that does support multi-policy
-    $policytypeid = $xml.SiPolicy.PolicyTypeID
-    if ($enforce) {
-      Set-RuleOption -FilePath "$xmloutput" -Option 3 -Delete
+  ElseIf ( $xml.SiPolicy.PolicyID ) {
+    Write-Host "Multiple Policy Format XML detected"
+    If ([System.Environment]::OSVersion.Version.Build -le 18362.900) {
+      Write-Error "This version of Windows does not support Multiple Policy Format XML files"
     }
     else {
-      Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
+      # Install on system that does support multi-policy
+      $policytypeid = $xml.SiPolicy.PolicyID
+      if ($enforce) {
+        Set-RuleOption -FilePath "$xmloutput" -Option 3 -Delete
+      }
+      else {
+        Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
+      }
+      ConvertFrom-CIPolicy -xmlFilePath "$xmloutput" -BinaryFilePath ".\$policytypeid.cip"
+      $PolicyBinary = ".\$policytypeid.cip"
+      $DestinationFolder = $env:windir + "\System32\CodeIntegrity\CIPolicies\Active\"
+      Copy-Item -Path $PolicyBinary -Destination $DestinationFolder -Force
     }
-    ConvertFrom-CIPolicy -xmlFilePath "$xmloutput" -BinaryFilePath ".\$policytypeid.cip"
-    $PolicyBinary = ".\$policytypeid.cip"
-    $DestinationFolder = $env:windir + "\System32\CodeIntegrity\CIPolicies\Active\"
-    Copy-Item -Path $PolicyBinary -Destination $DestinationFolder -Force
   }
-}
-ElseIf ( $xml.SiPolicy.PolicyID ) {
-  Write-Host "Multiple Policy Format XML detected"
-  If ([System.Environment]::OSVersion.Version.Build -le 18362.900) {
-    Write-Error "This version of Windows does not support Multiple Policy Format XML files"
+  Else {
+    Write-Error "Cannot determine XML format."
   }
-  else {
-    # Install on system that does support multi-policy
-    $policytypeid = $xml.SiPolicy.PolicyID
-    if ($enforce) {
-      Set-RuleOption -FilePath "$xmloutput" -Option 3 -Delete
-    }
-    else {
-      Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
-    }
-    ConvertFrom-CIPolicy -xmlFilePath "$xmloutput" -BinaryFilePath ".\$policytypeid.cip"
-    $PolicyBinary = ".\$policytypeid.cip"
-    $DestinationFolder = $env:windir + "\System32\CodeIntegrity\CIPolicies\Active\"
-    Copy-Item -Path $PolicyBinary -Destination $DestinationFolder -Force
-  }
-}
-Else {
-  Write-Error "Cannot determine XML format."
+
+  #Save a copy of the potentially-modified XML file for our record
+  $appliedpolicy = [io.path]::GetFileNameWithoutExtension($xmlpolicy) + "-applied.xml"
+  Write-Host "Copy of applied policy XML saved as: $appliedpolicy`n"
+  Copy-Item -path $xmloutput -Destination $appliedpolicy
 }
 
-#Save a copy of the potentially-modified XML file for our record
-$appliedpolicy = [io.path]::GetFileNameWithoutExtension($xmlpolicy) + "-applied.xml"
-Write-Host "Copy of applied policy XML saved as: $appliedpolicy`n"
-Copy-Item -path $xmloutput -Destination $appliedpolicy
+if ($enforce){
+  ApplyWDACPolicy -xmlpolicy $xmlpolicy -enforce
+}else {
+  ApplyWDACPolicy -xmlpolicy $xmlpolicy
+}
