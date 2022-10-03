@@ -1,4 +1,11 @@
-<#
+<#PSScriptInfo
+
+   .VERSION 1.0
+
+   .AUTHOR  Will Dormann
+   
+   .LICENSEURI https://opensource.org/licenses/BSD-2-Clause
+
    .SYNOPSIS
    Applies a WDAC XML policy file to a Windows system
 
