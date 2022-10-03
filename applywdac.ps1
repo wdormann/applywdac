@@ -128,8 +128,9 @@ function ApplyWDACPolicy {
   Copy-Item -path $xmloutput -Destination $appliedpolicy
 }
 
-if ($enforce){
+if ($enforce) {
   ApplyWDACPolicy -xmlpolicy $xmlpolicy -enforce
-}else {
+}
+else {
   ApplyWDACPolicy -xmlpolicy $xmlpolicy
 }

@@ -4,7 +4,7 @@
 
 ## Installation
 
-If you have the ability to run stand-along PowerShell scripts, simply run the `.\applywdac.ps1` script from a PowerShell prompt that is running with administrative privileges. Alternatively, you can paste the contents of `.\applywdac.ps1` into a PowerShell prompt that is running with administrative privileges and subsequently run `ApplyWDACPolicy` with the appropriate arguments.
+If you have the ability to run stand-along PowerShell scripts, simply run the `.\applywdac.ps1` script from a PowerShell prompt that is running with administrative privileges. Alternatively, you can paste the contents of `.\applywdac.ps1` into a PowerShell prompt that is running with administrative privileges and subsequently run `ApplyWDACPolicy` with the appropriate arguments. Just be sure to use `Ctrl+V` to do the pasting, as pasting via right-click will interpret pasted content on a line-by-line basis as opposed to in block mode.
 
 ## Usage
 
