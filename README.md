@@ -1,6 +1,6 @@
 # ApplyWDACPolicy
 
-applywdac.ps1 is a PowerShell script for applying WDAC policies, such as [Microsoft recommended driver block rules](https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/microsoft-recommended-driver-block-rules). This script is designed for use on systems that do **NOT** currently have WDAC policies and associated management tools in place. If you are already using WDAC, you should merge WDAC policies using whichever 
+`applywdac.ps1` is a PowerShell script for applying WDAC policies, such as the [Microsoft recommended driver block rules](https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/microsoft-recommended-driver-block-rules). This script is designed for use on systems that do **NOT** currently have WDAC policies and associated management tools in place. If you are already using WDAC, you should merge WDAC policies using whichever 
 
 ## Installation
 
