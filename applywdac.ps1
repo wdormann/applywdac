@@ -59,6 +59,10 @@ If ( $xml.SiPolicy.PolicyTypeID ) {
     else {
       Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
     }
+    $policytypeid = $xml.SiPolicy.PolicyTypeID
+    if ($policytypeid -notmatch "{A244370E-44C9-4C06-B551-F6016E563076}") {
+      Write-Warning "This WDAC policy uses a PolicyTypeID other than {A244370E-44C9-4C06-B551-F6016E563076}. Applying this policy may not have the expected outcome."
+    }
     ConvertFrom-CIPolicy -xmlFilePath "$xmloutput" -BinaryFilePath ".\SiPolicy.p7b"
     $PolicyBinary = ".\SIPolicy.p7b"
     $DestinationBinary = $env:windir + "\System32\CodeIntegrity\SiPolicy.p7b"
