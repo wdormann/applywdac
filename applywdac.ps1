@@ -102,6 +102,7 @@ function ApplyWDACPolicy {
     Write-Host "Multiple Policy Format XML detected"
     If ([System.Environment]::OSVersion.Version.Build -le 18362.900) {
       Write-Error "This version of Windows does not support Multiple Policy Format XML files"
+      return
     }
     else {
       # Install on system that does support multi-policy
@@ -120,6 +121,7 @@ function ApplyWDACPolicy {
   }
   Else {
     Write-Error "Cannot determine XML format."
+    return
   }
 
   #Save a copy of the potentially-modified XML file for our record
