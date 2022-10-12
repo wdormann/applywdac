@@ -18,6 +18,10 @@ PS> .\applywdac.ps1 -xmlpolicy blockeddrivers.xml -enforce
 # Same as above, but in "paste into PowerShell mode"
 PS> <paste applywdac.ps1 contents into PowerShell>
 PS> ApplyWDACPolicy -xmlpolicy blockeddrivers.xml -enforce
+
+# "paste into PowerShell mode" automatically download and install compiled policy binary from Microsoft
+PS> <paste applywdac.ps1 contents into PowerShell>
+PS> ApplyWDACPolicy -auto -enforce
 ```
 
 Pre-Windows-1903 example usage:
