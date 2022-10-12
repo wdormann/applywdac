@@ -60,6 +60,7 @@ function ApplyWDACPolicy {
     }
     else {
       Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
+      Write-warning "Try again with the -enforce option to make this policy enforced."
       $policybin = "SiPolicy_Audit.p7b"
     }
 
@@ -97,6 +98,7 @@ function ApplyWDACPolicy {
         }
         else {
           Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
+          Write-warning "Try again with the -enforce option to make this policy enforced."
         }
         $policytypeid = $xml.SiPolicy.PolicyTypeID
         if ($policytypeid -notmatch "{A244370E-44C9-4C06-B551-F6016E563076}") {
@@ -116,6 +118,7 @@ function ApplyWDACPolicy {
         }
         else {
           Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
+          Write-warning "Try again with the -enforce option to make this policy enforced."
         }
         ConvertFrom-CIPolicy -xmlFilePath "$xmloutput" -BinaryFilePath ".\$policytypeid.cip"
         $PolicyBinary = ".\$policytypeid.cip"
@@ -137,6 +140,7 @@ function ApplyWDACPolicy {
         }
         else {
           Write-warning "This policy is being deployed in audit mode. Rules will not be enforced!"
+          Write-warning "Try again with the -enforce option to make this policy enforced."
         }
         ConvertFrom-CIPolicy -xmlFilePath "$xmloutput" -BinaryFilePath ".\$policytypeid.cip"
         $PolicyBinary = ".\$policytypeid.cip"
