@@ -35,6 +35,8 @@
 #>
 Param([string]$xmlpolicy, [switch]$enforce, [switch]$auto)
 
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
 function ApplyWDACPolicy {
   Param([string]$xmlpolicy, [switch]$enforce, [switch]$auto)
 
