@@ -68,7 +68,7 @@ function ApplyWDACPolicy {
     iwr https://aka.ms/VulnerableDriverBlockList -UseBasicParsing -OutFile $binpolicyzip
     $zipFile = [IO.Compression.ZipFile]::OpenRead($binpolicyzip)
     Write-Host "Extracting $policybin to $env:windir\system32\CodeIntegrity\SiPolicy.p7b"
-    $zipFile.Entries | Where-Object Name -like SiPolicy_Audit.p7b | ForEach-Object { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($_, "$env:windir\system32\CodeIntegrity\SiPolicy.p7b", $true) }
+    $zipFile.Entries | Where-Object Name -like $policybin | ForEach-Object { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($_, "$env:windir\system32\CodeIntegrity\SiPolicy.p7b", $true) }
     dir "$env:windir\system32\CodeIntegrity\SiPolicy.p7b"
     Write-Host "`nPlease Reboot to apply changes"
   }
