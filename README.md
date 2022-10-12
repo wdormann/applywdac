@@ -1,10 +1,28 @@
 # ApplyWDACPolicy
 
-`applywdac.ps1` is a PowerShell script for applying WDAC policies, such as the [Microsoft recommended driver block rules](https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/microsoft-recommended-driver-block-rules). This script is designed for use on systems that do **NOT** currently have WDAC policies and associated management tools in place. If you are already using WDAC, you should merge WDAC policies using whichever tools and methods you already have in place. The target audience of this script are those who want to be able to apply WDAC rules easily, without requiring extensive knowledge of WDAC.
+`applywdac.ps1` is a PowerShell script for applying WDAC policies,
+such as the [Microsoft recommended driver block
+rules](https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/microsoft-recommended-driver-block-rules).
+This script is designed for use on systems that do **NOT** currently
+have WDAC policies and associated management tools in place. If you
+are already using WDAC, you should merge WDAC policies using whichever
+tools and methods you already have in place. The target audience of
+this script are those who want to be able to apply WDAC rules easily,
+without requiring extensive knowledge of WDAC.
 
 ## Installation
 
-If you have the ability to run stand-along PowerShell scripts, simply run the `.\applywdac.ps1` script from a PowerShell prompt that is running with administrative privileges. Alternatively, you can paste the contents of `.\applywdac.ps1` into a PowerShell prompt that is running with administrative privileges and subsequently run `ApplyWDACPolicy` with the appropriate arguments. Just be sure to use `Ctrl+V` to do the pasting, as pasting via right-click will interpret pasted content on a line-by-line basis as opposed to in block mode.
+If you have the ability to run stand-along PowerShell scripts, simply
+run the `.\applywdac.ps1` script from a PowerShell prompt that is
+running with administrative privileges. Alternatively, you can paste
+the contents of
+[applywdac.ps1](https://raw.githubusercontent.com/wdormann/applywdac/main/applywdac.ps1)
+into a PowerShell prompt that is running with administrative
+privileges and subsequently run `ApplyWDACPolicy` with the appropriate
+arguments. Just be sure to use **`Ctrl+V` on your keyboard** to do the
+pasting, as pasting via right-click or even the edit menu at the top
+will interpret pasted content on a line-by-line basis as opposed to in
+block mode.
 
 ## Usage
 
@@ -30,8 +48,8 @@ Pre-Windows-1903 example usage:
 Windows 1903 or later example usage:
 ![Windows Server 2016](applywdac-modern.png)
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+## Contributing Pull requests are welcome. For major changes, please
+open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
