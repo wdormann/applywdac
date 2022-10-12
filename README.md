@@ -48,6 +48,9 @@ Pre-Windows-1903 example usage:
 Windows 1903 or later example usage:
 ![Windows Server 2016](applywdac-modern.png)
 
+Automatic download from Microsoft example usage:
+![Windows Server 2016](applywdac-auto.png)
+
 ## Contributing Pull requests are welcome. For major changes, please
 open an issue first to discuss what you would like to change.
 
