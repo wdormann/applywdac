@@ -70,7 +70,7 @@ function ApplyWDACPolicy {
     Write-Host "Extracting $policybin to $env:windir\system32\CodeIntegrity\SiPolicy.p7b"
     $zipFile.Entries | Where-Object Name -like SiPolicy_Audit.p7b | ForEach-Object { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($_, "$env:windir\system32\CodeIntegrity\SiPolicy.p7b", $true) }
     dir "$env:windir\system32\CodeIntegrity\SiPolicy.p7b"
-
+    Write-Host "`nPlease Reboot to apply changes"
   }
   else {
 
@@ -153,6 +153,7 @@ function ApplyWDACPolicy {
     $appliedpolicy = [io.path]::GetFileNameWithoutExtension($xmlpolicy) + "-applied.xml"
     Write-Host "Copy of applied policy XML saved as: $appliedpolicy`n"
     Copy-Item -path $xmloutput -Destination $appliedpolicy
+    Write-Host "`nPlease Reboot to apply changes"
   }
 }
 
