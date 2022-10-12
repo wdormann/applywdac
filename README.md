@@ -51,6 +51,25 @@ Windows 1903 or later example usage:
 Automatic download from Microsoft example usage, "paste into PowerShell" invocation:
 ![Windows Server 2016](applywdac-auto.png)
 
+## HVCI Notes
+
+If you apply the [Microsoft recommended driver block
+rules](https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/microsoft-recommended-driver-block-rules),
+you may end up with
+[HVCI](https://learn.microsoft.com/en-us/windows/security/threat-protection/device-guard/enable-virtualization-based-protection-of-code-integrity)
+enabled on your system. While HVCI is an excellent mitigation against
+attacks and it should be used on every platform that can support it,
+there can be some edge cases where HVCI can interfere with the ability
+to use a system as intended. For example, a machine with VMware
+Workstation is installed and nested virtualization features are
+needed. In such cases, it may be necessary to disable HVCI to regain
+the ability to use the VMware Workstation native hypervisor. VMware
+has provided [instructions for how this can be
+accomplished](https://kb.vmware.com/s/article/2146361).
+
+Note that driver blocking with WDAC will still function as expected,
+even when HVCI is disabled.
+
 ## Contributing Pull requests are welcome. For major changes, please
 open an issue first to discuss what you would like to change.
 
