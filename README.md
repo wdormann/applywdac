@@ -60,7 +60,7 @@ you may end up with
 enabled on your system. While HVCI is an excellent mitigation against
 attacks and it should be used on every platform that can support it,
 there can be some edge cases where HVCI can interfere with the ability
-to use a system as intended. For example, a machine with VMware
+to use a system as intended. For example, a machine where VMware
 Workstation is installed and nested virtualization features are
 needed. In such cases, it may be necessary to disable HVCI to regain
 the ability to use the VMware Workstation native hypervisor. VMware
