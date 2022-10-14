@@ -70,6 +70,31 @@ accomplished](https://kb.vmware.com/s/article/2146361).
 Note that driver blocking with WDAC will still function as expected,
 even when HVCI is disabled.
 
+## Undoing the changes made by this utility
+
+You may encounter a situation where applying the Microsoft recommended
+driver block rules policy interferes with something that you want to
+do. If this is the case and you're sure that you wish to have a
+vulnerable driver on your system, you can undo the changes made by
+this script.
+
+### Removing automatic policy installation
+
+For systems that have applied the Microsoft recommended driver block
+rules using the `-auto` option, this tool downloads a blocklist binary
+from Microsoft and places it as
+`%windir%\system32\CodeIntegrity\SiPolicy.p7b`. To undo the driver
+policy changes, simply delete this file and reboot.
+
+### Removing manual policy installation
+
+For systems where an XML policy has been installed, this tool places
+the compiled policy as
+`%windir%\system32\CodeIntegrity\CIPolicies\Active\{PolicyId}.cip`,
+where `PolicyId` is the GUID of the policy that you have applied. To
+undo the driver policy changes, simply delete this file and reboot.
+
+
 ## Contributing Pull requests are welcome. For major changes, please
 open an issue first to discuss what you would like to change.
 
