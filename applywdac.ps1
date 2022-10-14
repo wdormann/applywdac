@@ -181,3 +181,4 @@ else {
     ApplyWDACPolicy -xmlpolicy $xmlpolicy
   }
 }
+
