@@ -1,9 +1,9 @@
-<#PSScriptInfo
+﻿<#PSScriptInfo
 
    .VERSION 1.0.1
 
    .AUTHOR  Will Dormann
-   
+
    .LICENSEURI https://opensource.org/licenses/BSD-2-Clause
 
    .SYNOPSIS
@@ -54,7 +54,7 @@ function ApplyWDACPolicy {
   If ([System.Environment]::OSVersion.Version.Major -lt 10) {
     Write-Error "Windows 10 or later is required to deploy WDAC policies."
     return
-  } 
+  }
 
   if ($auto) {
     if ($enforce) {
@@ -67,13 +67,13 @@ function ApplyWDACPolicy {
     }
 
     $binpolicyzip = [IO.Path]::GetTempFileName() | Rename-Item -NewName { $_ -replace 'tmp$', 'zip' } –PassThru
-    Write-Host "Downloading https://aka.ms/VulnerableDriverBlockList"
-    iwr https://aka.ms/VulnerableDriverBlockList -UseBasicParsing -OutFile $binpolicyzip
+    Write-Output "Downloading https://aka.ms/VulnerableDriverBlockList"
+    Invoke-WebRequest https://aka.ms/VulnerableDriverBlockList -UseBasicParsing -OutFile $binpolicyzip
     $zipFile = [IO.Compression.ZipFile]::OpenRead($binpolicyzip)
-    Write-Host "Extracting $policybin to $env:windir\system32\CodeIntegrity\SiPolicy.p7b"
+    Write-Output "Extracting $policybin to $env:windir\system32\CodeIntegrity\SiPolicy.p7b"
     $zipFile.Entries | Where-Object Name -like $policybin | ForEach-Object { [System.IO.Compression.ZipFileExtensions]::ExtractToFile($_, "$env:windir\system32\CodeIntegrity\SiPolicy.p7b", $true) }
-    dir "$env:windir\system32\CodeIntegrity\SiPolicy.p7b"
-    Write-Host "`nPlease Reboot to apply changes"
+    Get-ChildItem "$env:windir\system32\CodeIntegrity\SiPolicy.p7b"
+    Write-Output "`nPlease Reboot to apply changes"
   }
   else {
 
@@ -81,15 +81,14 @@ function ApplyWDACPolicy {
     $xmlpolicy = (Resolve-Path "$XmlPolicy")
     $xmloutput = New-TemporaryFile
 
-    Copy-Item -path $xmlpolicy -Destination $xmloutput 
-
+    Copy-Item -path $xmlpolicy -Destination $xmloutput
 
     [xml]$Xml = Get-Content "$xmloutput"
     If ( $xml.SiPolicy.PolicyTypeID ) {
-      Write-Host "Legacy XML format detected"
+      Write-Output "Legacy XML format detected"
       If ([System.Environment]::OSVersion.Version.Build -eq 14393) {
         # Windows 1607 doesn't understand the MaximumFileVersion attribute.  Remove it.
-        Write-Host "Removing MaximumFileVersion attributes, as this version of Windows cannot handle them..."
+        Write-Output "Removing MaximumFileVersion attributes, as this version of Windows cannot handle them..."
         $xml.SiPolicy.Filerules.ChildNodes | ForEach-Object -MemberName RemoveAttribute("MaximumFileVersion")
         $xml.Save((Resolve-Path "$xmloutput"))
       }
@@ -129,7 +128,7 @@ function ApplyWDACPolicy {
       }
     }
     ElseIf ( $xml.SiPolicy.PolicyID ) {
-      Write-Host "Multiple Policy Format XML detected"
+      Write-Output "Multiple Policy Format XML detected"
       If ([System.Environment]::OSVersion.Version.Build -le 18362.900) {
         Write-Error "This version of Windows does not support Multiple Policy Format XML files"
         return
@@ -157,9 +156,9 @@ function ApplyWDACPolicy {
 
     #Save a copy of the potentially-modified XML file for our record
     $appliedpolicy = [io.path]::GetFileNameWithoutExtension($xmlpolicy) + "-applied.xml"
-    Write-Host "Copy of applied policy XML saved as: $appliedpolicy`n"
+    Write-Output "Copy of applied policy XML saved as: $appliedpolicy`n"
     Copy-Item -path $xmloutput -Destination $appliedpolicy
-    Write-Host "`nPlease Reboot to apply changes"
+    Write-Output "`nPlease Reboot to apply changes"
   }
 }
 
