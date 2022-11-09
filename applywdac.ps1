@@ -1,6 +1,6 @@
 ﻿<#PSScriptInfo
 
-   .VERSION 1.0.1
+   .VERSION 1.0.2
 
    .AUTHOR  Will Dormann
 
@@ -57,6 +57,12 @@ function ApplyWDACPolicy {
   }
 
   if ($auto) {
+    If ([System.Environment]::OSVersion.Version.Build -eq 14393) {
+      Write-Error "This version of Windows is too old to successfully connect to Microsoft using HTTPS to download rules."
+      Write-Warning "Driver policies must be installed on this platform using the -xml option on a local file."
+      Write-Warning "See https://learn.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/microsoft-recommended-driver-block-rules for the current Microsoft block list"
+      return
+    }
     if ($enforce) {
       $policybin = "SiPolicy_Enforced.p7b"
     }
@@ -66,7 +72,7 @@ function ApplyWDACPolicy {
       $policybin = "SiPolicy_Audit.p7b"
     }
 
-    $binpolicyzip = [IO.Path]::GetTempFileName() | Rename-Item -NewName { $_ -replace 'tmp$', 'zip' } –PassThru
+    $binpolicyzip = [IO.Path]::GetTempFileName() | Rename-Item -NewName { $_ -replace 'tmp$', 'zip' } �PassThru
     Write-Output "Downloading https://aka.ms/VulnerableDriverBlockList"
     Invoke-WebRequest https://aka.ms/VulnerableDriverBlockList -UseBasicParsing -OutFile $binpolicyzip
     $zipFile = [IO.Compression.ZipFile]::OpenRead($binpolicyzip)
@@ -77,11 +83,10 @@ function ApplyWDACPolicy {
   }
   else {
 
-
     $xmlpolicy = (Resolve-Path "$XmlPolicy")
     $xmloutput = New-TemporaryFile
 
-    Copy-Item -path $xmlpolicy -Destination $xmloutput
+    Copy-Item -path $xmlpolicy -Destination $xmloutput -PassThru | Set-ItemProperty -name isreadonly -Value $false
 
     [xml]$Xml = Get-Content "$xmloutput"
     If ( $xml.SiPolicy.PolicyTypeID ) {
@@ -90,6 +95,13 @@ function ApplyWDACPolicy {
         # Windows 1607 doesn't understand the MaximumFileVersion attribute.  Remove it.
         Write-Output "Removing MaximumFileVersion attributes, as this version of Windows cannot handle them..."
         $xml.SiPolicy.Filerules.ChildNodes | ForEach-Object -MemberName RemoveAttribute("MaximumFileVersion")
+        Write-Output "Removing Update Policy No Reboot option, as this version of Windows cannot handle them..."
+        $ns = New-Object System.Xml.XmlNamespaceManager($xml.NameTable)
+        $ns.AddNamespace("ns", $xml.DocumentElement.NamespaceURI)
+        $node = $xml.SelectSingleNode("//ns:Rules/ns:Rule[ns:Option='Enabled:Update Policy No Reboot']", $ns)
+        if ( $node ) {
+          $node.ParentNode.RemoveChild($node)
+        }
         $xml.Save((Resolve-Path "$xmloutput"))
       }
       If ([System.Environment]::OSVersion.Version.Build -le 18362.900) {
@@ -157,7 +169,7 @@ function ApplyWDACPolicy {
     #Save a copy of the potentially-modified XML file for our record
     $appliedpolicy = [io.path]::GetFileNameWithoutExtension($xmlpolicy) + "-applied.xml"
     Write-Output "Copy of applied policy XML saved as: $appliedpolicy`n"
-    Copy-Item -path $xmloutput -Destination $appliedpolicy
+    Copy-Item -path $xmloutput -Destination $appliedpolicy -PassThru | Set-ItemProperty -name isreadonly -Value $false
     Write-Output "`nPlease Reboot to apply changes"
   }
 }
@@ -180,4 +192,3 @@ else {
     ApplyWDACPolicy -xmlpolicy $xmlpolicy
   }
 }
-
