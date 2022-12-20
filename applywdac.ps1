@@ -72,7 +72,7 @@ function ApplyWDACPolicy {
       $policybin = "SiPolicy_Audit.p7b"
     }
 
-    $binpolicyzip = [IO.Path]::GetTempFileName() | Rename-Item -NewName { $_ -replace 'tmp$', 'zip' } �PassThru
+    $binpolicyzip = [IO.Path]::GetTempFileName() | Rename-Item -NewName { $_ -replace 'tmp$', 'zip' } -PassThru
     Write-Output "Downloading https://aka.ms/VulnerableDriverBlockList"
     Invoke-WebRequest https://aka.ms/VulnerableDriverBlockList -UseBasicParsing -OutFile $binpolicyzip
     $zipFile = [IO.Compression.ZipFile]::OpenRead($binpolicyzip)
